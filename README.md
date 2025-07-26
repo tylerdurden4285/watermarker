@@ -80,6 +80,7 @@ FONT_FILE=/path/to/font.ttf    # Path to TTF font file
 
 # --- API Settings ---
 API_PORT=8000                  # Port for the web server
+HOST=0.0.0.0                   # Bind address for the server
 API_KEY=your-secure-api-key    # Change this to a secure key
 UPLOAD_FOLDER=./uploads        # Where to store uploaded files
 MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
@@ -126,7 +127,20 @@ python -m watermarker "CENTER" file.jpg --center
 python -m watermarker serve
 ```
 
-The API will be available at `http://localhost:8000` with interactive documentation at `http://localhost:8000/docs`.
+Alternatively, use Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Compose reads variables from your `.env` file. Set `API_PORT` (and `HOST` if needed) to expose a custom address. For example:
+
+```ini
+API_PORT=9000
+HOST=0.0.0.0
+```
+
+With the above settings the API will be available at `http://localhost:9000`.
 
 ### API Endpoints
 

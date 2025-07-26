@@ -126,6 +126,12 @@ python -m watermarker "CENTER" file.jpg --center
 python -m watermarker serve
 ```
 
+Alternatively, use Docker Compose:
+
+```bash
+docker compose up --build
+```
+
 The API will be available at `http://localhost:8000` with interactive documentation at `http://localhost:8000/docs`.
 
 ### API Endpoints

@@ -171,6 +171,15 @@ X-API-Key: your-api-key
 GET /health
 ```
 
+#### 5. Auth Check
+
+Verify that your API key is valid.
+
+```http
+GET /auth-check
+X-API-Key: your-api-key
+```
+
 ### API Response Examples
 
 **Successful Upload Response (202 Accepted):**
@@ -217,16 +226,16 @@ pytest
 
 ```
 watermarker/
-├── core/                   # Core functionality
-│   └── watermark.py        # Watermarking logic
-├── examples/               # Example scripts
-│   └── api_usage_example.py
-├── tests/                  # Test files
-├── .env                   # Configuration
-├── main.py                # FastAPI application
+├── core/            # Core functionality
+│   └── watermark.py # Watermarking logic
+├── tasks/           # Background task helpers
+├── api.py           # FastAPI application
+├── cli.py           # CLI entry point
+├── examples/        # Example scripts
+├── tests/           # Test files
+├── .env             # Configuration
 ├── requirements.txt       # Production dependencies
-├── requirements-dev.txt   # Development dependencies
-└── watermark.py           # CLI entry point
+└── requirements-dev.txt   # Development dependencies
 ```
 
 ### Adding New Features

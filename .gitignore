@@ -98,6 +98,7 @@ venv/
 ENV/
 env/
 tests/*
+.env
 
 # App directories and files
 uploads/*

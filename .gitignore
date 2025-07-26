@@ -98,7 +98,11 @@ venv/
 ENV/
 env/
 tests/*
+.env
 
 # App directories and files
 uploads/*
 src/watermarker/testing/*
+output/
+testing/
+tests/

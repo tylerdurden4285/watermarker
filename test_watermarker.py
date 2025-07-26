@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import time
+import shutil
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,32 @@ API_KEY = "your-secure-api-key-here"  # Should match your .env file
 TEST_FILES = ["test1.jpg", "test2.png"]  # Add test files in the same directory
 
 
+# Start the FastAPI server in a background process for all API tests. The server
+# is launched using the CLI's ``serve`` command and terminated once the test
+# session finishes. A short sleep ensures the server is ready before requests.
+@pytest.fixture(scope="session", autouse=True)
+def start_server() -> None:
+    env = os.environ.copy()
+    env.setdefault("PYTHONPATH", str(Path("src").absolute()))
+    env.setdefault("API_KEY", API_KEY)
+
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "watermarker", "serve"],
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    time.sleep(2)
+    try:
+        yield
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+
+
 @pytest.fixture
 def api_key() -> str:
     """Return the API key for test requests."""
@@ -26,6 +53,9 @@ def api_key() -> str:
 def run_cli() -> subprocess.CompletedProcess:
     """Run the CLI and return the completed process."""
     print("\n=== Testing CLI Interface ===")
+
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("ffmpeg/ffprobe not installed")
 
     # Create test files if they don't exist
     for filename in TEST_FILES:
@@ -40,8 +70,7 @@ def run_cli() -> subprocess.CompletedProcess:
         "watermarker",
         "TEST_WATERMARK",
         *TEST_FILES,
-        "--position",
-        "bottom-right",
+        "--bottom-right",
         "--quality",
         "90",
     ]
@@ -71,6 +100,9 @@ def test_api_health() -> None:
 def test_upload_file(api_key: str) -> None:
     """Test file upload and watermarking via API."""
     print("\n=== Testing File Upload API ===")
+
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("ffmpeg/ffprobe not installed")
 
     # Create a test file
     test_file = "test_upload.jpg"

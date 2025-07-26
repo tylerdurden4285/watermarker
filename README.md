@@ -133,6 +133,7 @@ Alternatively, use Docker Compose:
 docker compose up --build
 ```
 
+
 Compose reads variables from your `.env` file. Set `API_PORT` (and `HOST` if needed) to expose a custom address. For example:
 
 ```ini

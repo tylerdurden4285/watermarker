@@ -225,6 +225,9 @@ The `result` object includes a `progress` field showing completion percentage.
 }
 ```
 
+The file listed in `output_path` can be downloaded from the API via
+`/output/<filename>` when the server is running.
+
 ## 🧪 Testing
 
 Run the test suite with:

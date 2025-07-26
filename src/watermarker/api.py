@@ -182,7 +182,7 @@ async def auth_check(api_key: str = Depends(get_api_key)):
 
 
 def run_server() -> None:
-    port = int(os.getenv("PORT", os.getenv("API_PORT", 8000)))
+    port = int(os.getenv("API_PORT") or os.getenv("PORT") or 8000)
     host = os.getenv("HOST", "0.0.0.0")
 
     def cleanup_loop() -> None:

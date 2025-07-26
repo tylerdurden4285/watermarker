@@ -75,6 +75,9 @@ UPLOAD_FOLDER=./uploads        # Where to store uploaded files
 MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
 ```
 
+Watermarker checks `API_PORT` first when starting the server.
+If it's not set, `PORT` is used as a fallback.
+
 ## 💻 Command Line Usage
 
 ### Basic Commands

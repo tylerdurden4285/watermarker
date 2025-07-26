@@ -10,6 +10,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 - **Customizable**: Control font, size, color, and border of watermarks
 - **Background Processing**: Long-running tasks are handled asynchronously
 - **Progress Tracking**: Monitor task progress via API
+- **CLI Progress Bar**: Visual feedback when processing multiple files
 - **Retry Mechanism**: Automatic retries for failed operations
 - **Format Support**: Works with common image and video formats
 - **Secure**: API key authentication for web service
@@ -83,6 +84,7 @@ python -m watermarker "YOUR TEXT" image.jpg
 
 # Process multiple files
 python -m watermarker "COPYRIGHT" *.jpg *.png
+# A progress bar shows overall progress
 
 # Specify output directory
 python -m watermarker "CONFIDENTIAL" file.jpg --output-dir ./watermarked
@@ -192,6 +194,7 @@ X-API-Key: your-api-key
 ```
 
 **Task Status Response:**
+The `result` object includes a `progress` field showing completion percentage.
 ```json
 {
     "task_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -200,7 +203,8 @@ X-API-Key: your-api-key
     "started_at": "2025-01-01T12:00:01Z",
     "completed_at": "2025-01-01T12:00:05Z",
     "result": {
-        "output_path": "/output/watermarked_image_12345.jpg"
+        "output_path": "/output/watermarked_image_12345.jpg",
+        "progress": 100
     },
     "error": null,
     "retry_count": 0,

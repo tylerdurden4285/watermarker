@@ -97,6 +97,7 @@ dmypy.json
 venv/
 ENV/
 env/
+tests/*
 
 # App directories and files
 uploads/*

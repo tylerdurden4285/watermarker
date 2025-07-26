@@ -4,8 +4,8 @@ import argparse
 import os
 import sys
 from typing import List
-
 from .core.watermark import load_config, process_files
+
 
 
 def run_server() -> None:

@@ -170,6 +170,7 @@ async def auth_check(api_key: str = Depends(get_api_key)):
     return {"authenticated": True}
 
 
+
 def run_server() -> None:
     port = int(os.getenv("API_PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")

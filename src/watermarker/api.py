@@ -2,36 +2,26 @@
 """FastAPI application for the Watermarker service."""
 from __future__ import annotations
 
+import logging
 import os
-from dotenv import load_dotenv
-import uuid
+import shutil
 import threading
 import time
+import uuid
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from fastapi import (
-    FastAPI,
-    File,
-    UploadFile,
-    HTTPException,
-    Depends,
-    status,
-    BackgroundTasks,
-)
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import APIKeyHeader
 import uvicorn
-import shutil
-import logging
+from dotenv import load_dotenv
+from fastapi import (BackgroundTasks, Depends, FastAPI, File, HTTPException,
+                     UploadFile, status)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.security import APIKeyHeader
 
-from .core.watermark import apply_watermark, load_config, VALID_EXTENSIONS
-from .tasks.watermark import (
-    TaskManager,
-    TaskStatus,
-    process_watermark_task,
-    process_batch_task,
-)
+from .core.watermark import VALID_EXTENSIONS, apply_watermark, load_config
+from .tasks.watermark import (TaskManager, TaskStatus, process_batch_task,
+                              process_watermark_task)
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +169,16 @@ async def auth_check(api_key: str = Depends(get_api_key)):
     """Verify that the provided API key is valid."""
     return {"authenticated": True}
 
+
+@app.get("/{file_path:path}")
+async def serve_file(file_path: str, api_key: str = Depends(get_api_key)):
+    """Serve a previously generated file."""
+    path = Path(file_path)
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path)
 
 
 def run_server() -> None:

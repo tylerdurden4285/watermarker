@@ -179,13 +179,22 @@ GET /api/v1/tasks/{task_id}
 X-API-Key: your-api-key
 ```
 
-#### 4. Health Check
+#### 4. Download Result File
+
+```http
+GET /{file_path:path}
+X-API-Key: your-api-key
+```
+
+Download a previously generated file using the `output_path` returned by the API.
+
+#### 5. Health Check
 
 ```http
 GET /health
 ```
 
-#### 5. Auth Check
+#### 6. Auth Check
 
 Verify that your API key is valid.
 

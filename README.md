@@ -109,7 +109,7 @@ python -m watermarker "DRAFT" video.mp4 --quality 85
 ### Position Options
 
 ```bash
-# Position the watermark (default: bottom-right)
+# Position the watermark (default: top-left)
 python -m watermarker "TOP LEFT" file.jpg --top-left
 python -m watermarker "TOP RIGHT" file.jpg --top-right
 python -m watermarker "BOTTOM LEFT" file.jpg --bottom-left
@@ -141,7 +141,7 @@ X-API-Key: your-api-key
 
 file: [binary file data]
 text: Your Watermark Text
-position: bottom-right  # Optional, default: bottom-right
+position: top-left  # Optional, default: top-left
 ```
 
 Example with cURL:
@@ -169,7 +169,7 @@ X-API-Key: your-api-key
         "/path/to/file2.png"
     ],
     "text": "Your Watermark Text",
-    "position": "bottom-right"
+    "position": "top-left"
 }
 ```
 

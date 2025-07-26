@@ -68,6 +68,7 @@ OUTPUT_FOLDER=./output         # Where to save watermarked files
 FONT_FILE=/path/to/font.ttf    # Path to TTF font file
 
 # --- API Settings ---
+HOST=0.0.0.0                   # Host for the web server
 API_PORT=8000                  # Port for the web server
 API_KEY=your-secure-api-key    # Change this to a secure key
 UPLOAD_FOLDER=./uploads        # Where to store uploaded files

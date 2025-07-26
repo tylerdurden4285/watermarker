@@ -13,15 +13,26 @@ from typing import Any, Dict, List
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import (BackgroundTasks, Depends, FastAPI, File, HTTPException,
-                     UploadFile, status)
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    UploadFile,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
 
 from .core.watermark import VALID_EXTENSIONS, apply_watermark, load_config
-from .tasks.watermark import (TaskManager, TaskStatus, process_batch_task,
-                              process_watermark_task)
+from .tasks.watermark import (
+    TaskManager,
+    TaskStatus,
+    process_batch_task,
+    process_watermark_task,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +110,13 @@ async def upload_and_watermark(
     position: str = "top-left",
     api_key: str = Depends(get_api_key),
 ):
-    valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
+    valid_positions = [
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+        "center",
+    ]
     if position not in valid_positions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -134,7 +151,13 @@ async def watermark_batch(
     position: str = "top-left",
     api_key: str = Depends(get_api_key),
 ):
-    valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
+    valid_positions = [
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+        "center",
+    ]
     if position not in valid_positions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -172,13 +195,25 @@ async def auth_check(api_key: str = Depends(get_api_key)):
 
 @app.get("/{file_path:path}")
 async def serve_file(file_path: str):
-    """Serve a previously generated file."""
-    path = Path(file_path)
-    if not path.is_absolute():
-        path = Path.cwd() / path
-    if not path.is_file():
+    """Serve a previously generated file from the configured output folder."""
+    base_dir_str = config.get("output_folder")
+    if not base_dir_str:
+        raise HTTPException(
+            status_code=500, detail="Output folder not configured"
+        )
+
+    base_dir = Path(base_dir_str).resolve()
+    requested_path = (base_dir / file_path).resolve()
+
+    try:
+        requested_path.relative_to(base_dir)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not requested_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(path)
+
+    return FileResponse(str(requested_path))
 
 
 def run_server() -> None:
@@ -207,5 +242,9 @@ def run_server() -> None:
     print("\nUse Ctrl+C to stop\n")
 
     uvicorn.run(
-        "watermarker.api:app", host=host, port=port, reload=True, log_level="info"
+        "watermarker.api:app",
+        host=host,
+        port=port,
+        reload=True,
+        log_level="info",
     )

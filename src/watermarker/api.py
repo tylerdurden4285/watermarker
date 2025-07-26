@@ -106,7 +106,7 @@ async def upload_and_watermark(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     text: str = "WATERMARK",
-    position: str = "bottom-right",
+    position: str = "top-left",
     api_key: str = Depends(get_api_key),
 ):
     valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
@@ -141,7 +141,7 @@ async def watermark_batch(
     background_tasks: BackgroundTasks,
     file_paths: List[str],
     text: str,
-    position: str = "bottom-right",
+    position: str = "top-left",
     api_key: str = Depends(get_api_key),
 ):
     valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]

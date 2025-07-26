@@ -114,6 +114,13 @@ python -m watermarker "CENTER" file.jpg --center
 python -m watermarker serve
 ```
 
+The server runs on **Uvicorn** and will check the `API_PORT` environment
+variable, falling back to `PORT` if set. For example:
+
+```bash
+PORT=5000 python -m watermarker serve
+```
+
 The API will be available at `http://localhost:8000` with interactive documentation at `http://localhost:8000/docs`.
 
 ### API Endpoints

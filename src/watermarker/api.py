@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from dotenv import load_dotenv
 import uuid
 import threading
 import time
@@ -34,6 +35,9 @@ from .tasks.watermark import (
 
 logger = logging.getLogger(__name__)
 
+# Load environment variables from a .env file if present
+load_dotenv()
+
 config = load_config()
 os.makedirs(config["upload_folder"], exist_ok=True)
 
@@ -59,7 +63,9 @@ def get_api_key(api_key: str = Depends(api_key_header)) -> str:
     if not API_KEY:
         raise HTTPException(status_code=500, detail="API key not configured")
     if api_key != API_KEY:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
+        )
     return api_key
 
 
@@ -123,7 +129,11 @@ async def upload_and_watermark(
         config=config,
     )
 
-    return {"task_id": task.task_id, "status": "processing", "status_url": f"/api/v1/tasks/{task.task_id}"}
+    return {
+        "task_id": task.task_id,
+        "status": "processing",
+        "status_url": f"/api/v1/tasks/{task.task_id}",
+    }
 
 
 @app.post("/api/v1/watermark/batch", status_code=status.HTTP_202_ACCEPTED)
@@ -172,7 +182,7 @@ async def auth_check(api_key: str = Depends(get_api_key)):
 
 
 def run_server() -> None:
-    port = int(os.getenv("API_PORT", 8000))
+    port = int(os.getenv("PORT", os.getenv("API_PORT", 8000)))
     host = os.getenv("HOST", "0.0.0.0")
 
     def cleanup_loop() -> None:
@@ -196,4 +206,6 @@ def run_server() -> None:
     print(f"Output folder: {os.path.abspath(config['output_folder'])}")
     print("\nUse Ctrl+C to stop\n")
 
-    uvicorn.run("watermarker.api:app", host=host, port=port, reload=True, log_level="info")
+    uvicorn.run(
+        "watermarker.api:app", host=host, port=port, reload=True, log_level="info"
+    )

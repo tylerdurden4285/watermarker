@@ -183,7 +183,6 @@ X-API-Key: your-api-key
 
 ```http
 GET /{file_path:path}
-X-API-Key: your-api-key
 ```
 
 Download a previously generated file using the `output_path` returned by the API.

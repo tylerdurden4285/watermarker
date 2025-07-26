@@ -171,7 +171,7 @@ async def auth_check(api_key: str = Depends(get_api_key)):
 
 
 @app.get("/{file_path:path}")
-async def serve_file(file_path: str, api_key: str = Depends(get_api_key)):
+async def serve_file(file_path: str):
     """Serve a previously generated file."""
     path = Path(file_path)
     if not path.is_absolute():

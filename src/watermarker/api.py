@@ -2,35 +2,25 @@
 """FastAPI application for the Watermarker service."""
 from __future__ import annotations
 
+import logging
 import os
-import uuid
+import shutil
 import threading
 import time
+import uuid
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from fastapi import (
-    FastAPI,
-    File,
-    UploadFile,
-    HTTPException,
-    Depends,
-    status,
-    BackgroundTasks,
-)
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import APIKeyHeader
 import uvicorn
-import shutil
-import logging
+from fastapi import (BackgroundTasks, Depends, FastAPI, File, HTTPException,
+                     UploadFile, status)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.security import APIKeyHeader
 
-from .core.watermark import apply_watermark, load_config, VALID_EXTENSIONS
-from .tasks.watermark import (
-    TaskManager,
-    TaskStatus,
-    process_watermark_task,
-    process_batch_task,
-)
+from .core.watermark import VALID_EXTENSIONS, apply_watermark, load_config
+from .tasks.watermark import (TaskManager, TaskStatus, process_batch_task,
+                              process_watermark_task)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +49,9 @@ def get_api_key(api_key: str = Depends(api_key_header)) -> str:
     if not API_KEY:
         raise HTTPException(status_code=500, detail="API key not configured")
     if api_key != API_KEY:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
+        )
     return api_key
 
 
@@ -123,7 +115,11 @@ async def upload_and_watermark(
         config=config,
     )
 
-    return {"task_id": task.task_id, "status": "processing", "status_url": f"/api/v1/tasks/{task.task_id}"}
+    return {
+        "task_id": task.task_id,
+        "status": "processing",
+        "status_url": f"/api/v1/tasks/{task.task_id}",
+    }
 
 
 @app.post("/api/v1/watermark/batch", status_code=status.HTTP_202_ACCEPTED)
@@ -170,6 +166,31 @@ async def auth_check(api_key: str = Depends(get_api_key)):
     return {"authenticated": True}
 
 
+def serve_file(requested_path: str):
+    """Return a FileResponse for a path within the output folder."""
+    base_dir = Path(config["output_folder"]).resolve()
+
+    req_path = Path(requested_path)
+    if not req_path.is_absolute():
+        req_path = base_dir / req_path
+
+    resolved = req_path.resolve()
+
+    try:
+        resolved.relative_to(base_dir)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if not resolved.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(str(resolved))
+
+
+@app.get("/api/v1/files/{requested_path:path}")
+async def serve_file_endpoint(requested_path: str, api_key: str = Depends(get_api_key)):
+    return serve_file(requested_path)
+
 
 def run_server() -> None:
     port = int(os.getenv("API_PORT", 8000))
@@ -196,4 +217,6 @@ def run_server() -> None:
     print(f"Output folder: {os.path.abspath(config['output_folder'])}")
     print("\nUse Ctrl+C to stop\n")
 
-    uvicorn.run("watermarker.api:app", host=host, port=port, reload=True, log_level="info")
+    uvicorn.run(
+        "watermarker.api:app", host=host, port=port, reload=True, log_level="info"
+    )

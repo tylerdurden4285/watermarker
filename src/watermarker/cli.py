@@ -4,8 +4,8 @@ import argparse
 import os
 import sys
 from typing import List
-from .core.watermark import load_config, process_files
 
+from .core.watermark import load_config, process_files
 
 
 def run_server() -> None:
@@ -21,21 +21,59 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         description="Add a text watermark to image and video files using ffmpeg.",
-        epilog="Example: watermarker \"TEXT\" file1.jpg file2.mp4 --center",
+        epilog='Example: watermarker "TEXT" file1.jpg file2.mp4 --center',
     )
     parser.add_argument("text", help="Watermark text to apply")
     parser.add_argument("files", nargs="+", help="Files to watermark")
 
     position_group = parser.add_mutually_exclusive_group()
-    position_group.add_argument("--top-left", dest="position", action="store_const", const="top-left", help="Place watermark in top-left corner")
-    position_group.add_argument("--top-right", dest="position", action="store_const", const="top-right", help="Place watermark in top-right corner")
-    position_group.add_argument("--bottom-left", dest="position", action="store_const", const="bottom-left", help="Place watermark in bottom-left corner")
-    position_group.add_argument("--bottom-right", dest="position", action="store_const", const="bottom-right", help="Place watermark in bottom-right corner (default)")
-    position_group.add_argument("--center", dest="position", action="store_const", const="center", help="Center the watermark")
-    parser.set_defaults(position="bottom-right")
+    position_group.add_argument(
+        "--top-left",
+        dest="position",
+        action="store_const",
+        const="top-left",
+        help="Place watermark in top-left corner (default)",
+    )
+    position_group.add_argument(
+        "--top-right",
+        dest="position",
+        action="store_const",
+        const="top-right",
+        help="Place watermark in top-right corner",
+    )
+    position_group.add_argument(
+        "--bottom-left",
+        dest="position",
+        action="store_const",
+        const="bottom-left",
+        help="Place watermark in bottom-left corner",
+    )
+    position_group.add_argument(
+        "--bottom-right",
+        dest="position",
+        action="store_const",
+        const="bottom-right",
+        help="Place watermark in bottom-right corner",
+    )
+    position_group.add_argument(
+        "--center",
+        dest="position",
+        action="store_const",
+        const="center",
+        help="Center the watermark",
+    )
+    parser.set_defaults(position="top-left")
 
-    parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory")
-    parser.add_argument("--quality", type=int, choices=range(1, 101), metavar="[1-100]", help="Quality setting for output")
+    parser.add_argument(
+        "--output-dir", type=str, default=None, help="Custom output directory"
+    )
+    parser.add_argument(
+        "--quality",
+        type=int,
+        choices=range(1, 101),
+        metavar="[1-100]",
+        help="Quality setting for output",
+    )
 
     return parser.parse_args(argv)
 
@@ -67,4 +105,3 @@ def cli_main(argv: List[str]) -> int:
 
 def main(argv: List[str] | None = None) -> None:
     sys.exit(cli_main(argv or sys.argv[1:]))
-

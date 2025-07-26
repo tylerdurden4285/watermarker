@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 from typing import List
+from tqdm import tqdm
 from .core.watermark import load_config, process_files
 
 
@@ -53,7 +54,15 @@ def cli_main(argv: List[str]) -> int:
         config["image_quality"] = args.quality
         config["video_quality"] = args.quality
 
-    result = process_files(args.files, args.text, position=args.position, config=config)
+    total_files = len(args.files)
+    with tqdm(total=total_files, desc="Watermarking", unit="file") as progress:
+        result = process_files(
+            args.files,
+            args.text,
+            position=args.position,
+            config=config,
+            progress_callback=lambda _i, _t: progress.update(1),
+        )
 
     if result["processed"]:
         for inp, out in result["processed"]:

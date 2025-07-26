@@ -5,7 +5,7 @@ import shutil
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Callable
 
 # --- Constants ---
 VALID_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.mp4', '.mkv', '.mov', '.avi', '.webm')
@@ -196,8 +196,9 @@ def process_files(
     files: List[str],
     watermark_text: str,
     position: str = 'top-left',
-    config: Optional[Dict] = None
-) -> Dict[str, Union[List[str], List[str]]]:
+    config: Optional[Dict] = None,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+) -> Dict[str, Union[List[Tuple[str, str]], List[Tuple[str, str]]]]:
     """
     Process multiple files with the same watermark settings.
     
@@ -206,6 +207,8 @@ def process_files(
         watermark_text: Text to use as watermark
         position: Position of the watermark
         config: Optional configuration dictionary
+        progress_callback: Optional function called after each file is processed
+            with the current index and total number of files
         
     Returns:
         Dictionary with 'processed' and 'skipped' file lists
@@ -213,10 +216,12 @@ def process_files(
     if config is None:
         config = load_config()
     
-    processed = []
-    skipped = []
-    
-    for file_path in files:
+    processed: List[Tuple[str, str]] = []
+    skipped: List[Tuple[str, str]] = []
+
+    total = len(files)
+
+    for idx, file_path in enumerate(files, 1):
         try:
             if not os.path.isfile(file_path):
                 skipped.append((file_path, "File not found"))
@@ -232,9 +237,12 @@ def process_files(
                 
             output_path = apply_watermark(file_path, watermark_text, position=position, config=config)
             processed.append((file_path, output_path))
-            
+
         except Exception as e:
             skipped.append((file_path, str(e)))
+        finally:
+            if progress_callback:
+                progress_callback(idx, total)
     
     return {
         'processed': processed,

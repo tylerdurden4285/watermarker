@@ -6,6 +6,7 @@ import os
 import uuid
 import threading
 import time
+from dotenv import load_dotenv
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -33,6 +34,9 @@ from .tasks.watermark import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Load environment variables from a .env file if present
+load_dotenv()
 
 config = load_config()
 os.makedirs(config["upload_folder"], exist_ok=True)

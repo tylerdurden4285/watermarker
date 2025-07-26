@@ -39,13 +39,16 @@ class Task(BaseModel):
     retry_delay: int = 5  # seconds
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return a dictionary representation of the task."""
+        result = dict(self.result) if self.result else {}
+        result.setdefault("progress", 0)
         return {
             "task_id": self.task_id,
             "status": self.status,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
-            "result": self.result,
+            "result": result,
             "error": self.error,
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
@@ -103,10 +106,16 @@ async def process_watermark_task(
         return
 
     try:
-        TaskManager.update_task_status(task_id, TaskStatus.PROCESSING)
+        TaskManager.update_task_status(
+            task_id,
+            TaskStatus.PROCESSING,
+            result={"progress": 0},
+        )
         output_path = apply_watermark(input_path, watermark_text, position=position, config=config)
         TaskManager.update_task_status(
-            task_id, TaskStatus.COMPLETED, result={"output_path": output_path}
+            task_id,
+            TaskStatus.COMPLETED,
+            result={"output_path": output_path, "progress": 100},
         )
         logger.info("Task %s completed successfully", task_id)
     except Exception as exc:

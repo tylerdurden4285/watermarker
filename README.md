@@ -52,6 +52,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
    cp .env.example .env
    # Edit .env with your preferred settings
    ```
+   The CLI and API automatically load variables from this `.env` file.
 
 ## ⚙️ Configuration
 

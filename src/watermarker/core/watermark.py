@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import shutil
+from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
@@ -36,6 +37,7 @@ def escape_ffmpeg_text(text: str) -> str:
 
 def load_config() -> Dict:
     """Load and validate configuration from environment variables."""
+    load_dotenv()
     config = {
         'output_folder': get_env_var('OUTPUT_FOLDER', ''),
         'padding': int(get_env_var('PADDING', '0')),

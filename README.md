@@ -35,7 +35,12 @@ A powerful tool for adding text watermarks to images and videos, available as bo
    pip install -r requirements.txt
    ```
 
-3. Install FFmpeg (if not already installed):
+3. Install the project in editable mode:
+   ```bash
+   pip install -e .
+   ```
+
+4. Install FFmpeg (if not already installed):
    ```bash
    # Ubuntu/Debian
    sudo apt-get update && sudo apt-get install -y ffmpeg
@@ -47,7 +52,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
    choco install ffmpeg
    ```
 
-4. Configure the application by copying and editing the example `.env` file:
+5. Configure the application by copying and editing the example `.env` file:
    ```bash
    cp .env.example .env
    # Edit .env with your preferred settings
@@ -77,6 +82,8 @@ MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
 ## 💻 Command Line Usage
 
 ### Basic Commands
+
+> **Note**: Running `python -m watermarker` assumes the package is installed (e.g. with `pip install -e .`) or that `PYTHONPATH=src` is set.
 
 ```bash
 # Add watermark to a single file

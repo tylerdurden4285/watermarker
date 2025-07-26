@@ -19,7 +19,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - FFmpeg (for video processing)
 
 ### Installation

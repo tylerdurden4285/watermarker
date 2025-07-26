@@ -166,7 +166,12 @@ def apply_watermark(
         if is_image:
             ffmpeg_cmd.extend(['-q:v', str(config['image_quality'])])
         else:
-            ffmpeg_cmd.extend(['-crf', str(config['video_quality']), '-c:a', 'copy'])
+            ffmpeg_cmd.extend([
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', str(config['video_quality']),
+                '-c:a', 'copy'
+            ])
         
         # Add output path
         ffmpeg_cmd.extend(['-y', output_path])

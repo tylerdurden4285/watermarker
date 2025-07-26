@@ -10,10 +10,18 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+import pytest
+
 # Configuration
 API_URL = "http://localhost:8000"
 API_KEY = "your-secure-api-key-here"  # Should match your .env file
 TEST_FILES = ["test1.jpg", "test2.png"]  # Add test files in the same directory
+
+
+@pytest.fixture
+def api_key() -> str:
+    """Return the API key for test requests."""
+    return os.getenv("API_KEY", API_KEY)
 
 def run_cli_test():
     """Test the CLI interface"""

@@ -164,6 +164,13 @@ async def health_check():
     return {"status": "ok"}
 
 
+@app.get("/auth-check")
+async def auth_check(api_key: str = Depends(get_api_key)):
+    """Verify that the provided API key is valid."""
+    return {"authenticated": True}
+
+
+
 def run_server() -> None:
     port = int(os.getenv("API_PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")

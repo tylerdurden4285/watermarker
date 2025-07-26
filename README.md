@@ -173,6 +173,15 @@ X-API-Key: your-api-key
 GET /health
 ```
 
+#### 5. Auth Check
+
+Verify that your API key is valid.
+
+```http
+GET /auth-check
+X-API-Key: your-api-key
+```
+
 ### API Response Examples
 
 **Successful Upload Response (202 Accepted):**

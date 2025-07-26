@@ -21,6 +21,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 
 - Python 3.8+
 - FFmpeg (for video processing)
+- aiofiles>=0.6.0 (for asynchronous file operations)
 
 ### Installation
 

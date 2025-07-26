@@ -10,6 +10,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 - **Customizable**: Control font, size, color, and border of watermarks
 - **Background Processing**: Long-running tasks are handled asynchronously
 - **Progress Tracking**: Monitor task progress via API
+- **CLI Progress Bar**: Visual feedback when processing multiple files
 - **Retry Mechanism**: Automatic retries for failed operations
 - **Format Support**: Works with common image and video formats
 - **Secure**: API key authentication for web service
@@ -83,6 +84,7 @@ python -m watermarker "YOUR TEXT" image.jpg
 
 # Process multiple files
 python -m watermarker "COPYRIGHT" *.jpg *.png
+# A progress bar shows overall progress
 
 # Specify output directory
 python -m watermarker "CONFIDENTIAL" file.jpg --output-dir ./watermarked

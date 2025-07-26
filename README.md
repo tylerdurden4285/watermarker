@@ -183,6 +183,7 @@ GET /health
 ```
 
 **Task Status Response:**
+The `result` object includes a `progress` field showing completion percentage.
 ```json
 {
     "task_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -191,7 +192,8 @@ GET /health
     "started_at": "2025-01-01T12:00:01Z",
     "completed_at": "2025-01-01T12:00:05Z",
     "result": {
-        "output_path": "/output/watermarked_image_12345.jpg"
+        "output_path": "/output/watermarked_image_12345.jpg",
+        "progress": 100
     },
     "error": null,
     "retry_count": 0,

@@ -31,9 +31,15 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
     position_group.add_argument("--top-left", dest="position", action="store_const", const="top-left", help="Place watermark in top-left corner")
     position_group.add_argument("--top-right", dest="position", action="store_const", const="top-right", help="Place watermark in top-right corner")
     position_group.add_argument("--bottom-left", dest="position", action="store_const", const="bottom-left", help="Place watermark in bottom-left corner")
-    position_group.add_argument("--bottom-right", dest="position", action="store_const", const="bottom-right", help="Place watermark in bottom-right corner (default)")
+    position_group.add_argument(
+        "--bottom-right",
+        dest="position",
+        action="store_const",
+        const="bottom-right",
+        help="Place watermark in bottom-right corner",
+    )
     position_group.add_argument("--center", dest="position", action="store_const", const="center", help="Center the watermark")
-    parser.set_defaults(position="bottom-right")
+    parser.set_defaults(position="top-left")
 
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory")
     parser.add_argument("--quality", type=int, choices=range(1, 101), metavar="[1-100]", help="Quality setting for output")

@@ -54,20 +54,18 @@ def run_cli_test():
     
     return result.returncode == 0
 
-def test_api_health() -> bool:
+def test_api_health():
     """Test API health check endpoint"""
     try:
         response = requests.get(f"{API_URL}/health")
-        if response.status_code == 200:
-            print("✓ API health check passed")
-            return True
-        print(f"✗ API health check failed: {response.status_code}")
-        return False
+        assert response.status_code == 200, (
+            f"API health check failed: {response.status_code}"
+        )
+        print("✓ API health check passed")
     except Exception as e:
-        print(f"✗ API health check error: {str(e)}")
-        return False
+        pytest.fail(f"API health check error: {str(e)}")
 
-def test_upload_file(api_key: str) -> Optional[str]:
+def test_upload_file(api_key: str):
     """Test file upload and watermarking via API"""
     print("\n=== Testing File Upload API ===")
     
@@ -94,17 +92,17 @@ def test_upload_file(api_key: str) -> Optional[str]:
                 headers=headers
             )
             
-            if response.status_code == 202:
-                task_id = response.json().get('task_id')
-                print(f"✓ Upload started. Task ID: {task_id}")
-                return task_id
-            else:
-                print(f"✗ Upload failed: {response.status_code} - {response.text}")
-                return None
+            assert response.status_code == 202, (
+                f"Upload failed: {response.status_code} - {response.text}"
+            )
+            task_id = response.json().get("task_id")
+            assert task_id, "No task_id returned"
+            print(f"✓ Upload started. Task ID: {task_id}")
+            # Optionally wait for completion and assert success
+            assert wait_for_task_completion(task_id, api_key)
                 
     except Exception as e:
-        print(f"✗ Upload error: {str(e)}")
-        return None
+        pytest.fail(f"Upload error: {str(e)}")
     finally:
         # Clean up test file
         if os.path.exists(test_file):

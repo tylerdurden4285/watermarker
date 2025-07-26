@@ -5,7 +5,14 @@ import os
 import sys
 from typing import List
 
-from .core.watermark import load_config, process_files
+from tqdm import tqdm
+
+from .core.watermark import (
+    SUFFIX,
+    VALID_EXTENSIONS,
+    apply_watermark,
+    load_config,
+)
 
 
 def run_server() -> None:
@@ -53,16 +60,39 @@ def cli_main(argv: List[str]) -> int:
         config["image_quality"] = args.quality
         config["video_quality"] = args.quality
 
-    result = process_files(args.files, args.text, position=args.position, config=config)
+    processed = []
+    skipped = []
 
-    if result["processed"]:
-        for inp, out in result["processed"]:
+    for file_path in tqdm(args.files, desc="Watermarking", unit="file"):
+        try:
+            if not os.path.isfile(file_path):
+                skipped.append((file_path, "File not found"))
+                continue
+
+            if not file_path.lower().endswith(VALID_EXTENSIONS):
+                skipped.append((file_path, "Unsupported file type"))
+                continue
+
+            if SUFFIX in file_path:
+                skipped.append((file_path, "Already watermarked"))
+                continue
+
+            output_path = apply_watermark(
+                file_path, args.text, position=args.position, config=config
+            )
+            processed.append((file_path, output_path))
+
+        except Exception as exc:
+            skipped.append((file_path, str(exc)))
+
+    if processed:
+        for inp, out in processed:
             print(f"{inp} -> {out}")
-    if result["skipped"]:
-        for path, reason in result["skipped"]:
+    if skipped:
+        for path, reason in skipped:
             print(f"Skipped {path}: {reason}", file=sys.stderr)
 
-    return 0 if result["processed"] else 1
+    return 0 if processed else 1
 
 
 def main(argv: List[str] | None = None) -> None:

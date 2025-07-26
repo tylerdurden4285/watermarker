@@ -53,6 +53,11 @@ A powerful tool for adding text watermarks to images and videos, available as bo
    choco install ffmpeg
    ```
 
+   After installation, verify that the `ffmpeg` command is in your `PATH` by running:
+   ```bash
+   ffmpeg -version
+   ```
+
 5. Configure the application by copying and editing the example `.env` file:
    ```bash
    cp .env.example .env

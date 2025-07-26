@@ -193,7 +193,7 @@ async def auth_check(api_key: str = Depends(get_api_key)):
     return {"authenticated": True}
 
 
-@app.get("/{file_path:path}")
+@app.get("/{file_path:path}", include_in_schema=False)
 async def serve_file(file_path: str):
     """Serve a previously generated file from the configured output folder."""
     base_dir_str = config.get("output_folder")

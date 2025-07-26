@@ -20,6 +20,7 @@ from fastapi import (
     BackgroundTasks,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import APIKeyHeader
 import uvicorn
 import shutil
@@ -55,6 +56,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve files from the configured output directory if provided
+if config["output_folder"]:
+    app.mount(
+        "/output",
+        StaticFiles(directory=config["output_folder"]),
+        name="output",
+    )
+
 API_KEY = os.getenv("API_KEY")
 api_key_header = APIKeyHeader(name="X-API-Key")
 
@@ -63,7 +72,9 @@ def get_api_key(api_key: str = Depends(api_key_header)) -> str:
     if not API_KEY:
         raise HTTPException(status_code=500, detail="API key not configured")
     if api_key != API_KEY:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
+        )
     return api_key
 
 
@@ -127,7 +138,11 @@ async def upload_and_watermark(
         config=config,
     )
 
-    return {"task_id": task.task_id, "status": "processing", "status_url": f"/api/v1/tasks/{task.task_id}"}
+    return {
+        "task_id": task.task_id,
+        "status": "processing",
+        "status_url": f"/api/v1/tasks/{task.task_id}",
+    }
 
 
 @app.post("/api/v1/watermark/batch", status_code=status.HTTP_202_ACCEPTED)
@@ -174,7 +189,6 @@ async def auth_check(api_key: str = Depends(get_api_key)):
     return {"authenticated": True}
 
 
-
 def run_server() -> None:
     port = int(os.getenv("API_PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
@@ -200,4 +214,6 @@ def run_server() -> None:
     print(f"Output folder: {os.path.abspath(config['output_folder'])}")
     print("\nUse Ctrl+C to stop\n")
 
-    uvicorn.run("watermarker.api:app", host=host, port=port, reload=True, log_level="info")
+    uvicorn.run(
+        "watermarker.api:app", host=host, port=port, reload=True, log_level="info"
+    )

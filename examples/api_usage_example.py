@@ -18,7 +18,7 @@ class WatermarkerClient:
         self,
         file_path: str,
         text: str = "WATERMARK",
-        position: str = "bottom-right"
+        position: str = "top-left"
     ) -> Optional[dict]:
         """Upload a file and apply watermark"""
         url = f"{self.base_url}/api/v1/watermark/upload"
@@ -76,7 +76,7 @@ def main():
     result = client.upload_and_watermark(
         file_path=FILE_TO_PROCESS,
         text="SAMPLE_WATERMARK",
-        position="bottom-right"
+        position="top-left"
     )
     
     if not result:

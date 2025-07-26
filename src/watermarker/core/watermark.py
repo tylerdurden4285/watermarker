@@ -34,6 +34,13 @@ def escape_ffmpeg_text(text: str) -> str:
         return ''
     return str(text).replace('\\', '\\\\').replace("'", "'\\\\''").replace(':', '\\\\:')
 
+def verify_ffmpeg() -> None:
+    """Ensure ffmpeg command is available."""
+    if shutil.which('ffmpeg') is None:
+        raise WatermarkError(
+            "FFmpeg executable not found. Install FFmpeg and ensure it is in your PATH."
+        )
+
 def load_config() -> Dict:
     """Load and validate configuration from environment variables."""
     config = {
@@ -69,6 +76,7 @@ def load_config() -> Dict:
 def get_dimensions(file_path: str) -> Tuple[int, int]:
     """Get width and height of a video or image file using ffprobe."""
     try:
+        verify_ffmpeg()
         probe_cmd = [
             'ffprobe',
             '-v', 'error',
@@ -103,6 +111,7 @@ def apply_watermark(
         Path to the watermarked file
     """
     try:
+        verify_ffmpeg()
         # Load config if not provided
         if config is None:
             config = load_config()

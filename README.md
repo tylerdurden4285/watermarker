@@ -86,6 +86,8 @@ UPLOAD_FOLDER=./uploads        # Where to store uploaded files
 MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
 ```
 
+CLI arguments or API parameters will override these environment settings if provided.
+
 ## 💻 Command Line Usage
 
 ### Basic Commands
@@ -105,6 +107,9 @@ python -m watermarker "CONFIDENTIAL" file.jpg --output-dir ./watermarked
 
 # Adjust quality (1-100)
 python -m watermarker "DRAFT" video.mp4 --quality 85
+
+# Use a specific font file
+python -m watermarker "STYLISH" file.jpg --font-file /path/to/font.ttf
 ```
 
 ### Position Options
@@ -157,6 +162,7 @@ X-API-Key: your-api-key
 file: [binary file data]
 text: Your Watermark Text
 position: top-left  # Optional, default: top-left
+font_file: /path/to/font.ttf  # Optional
 ```
 
 Example with cURL:
@@ -166,7 +172,8 @@ curl -X POST "http://localhost:8000/api/v1/watermark/upload" \
   -H "X-API-Key: your-api-key" \
   -F "file=@/path/to/your/image.jpg" \
   -F "text=SAMPLE_WATERMARK" \
-  -F "position=center"
+  -F "position=center" \
+  -F "font_file=/path/to/font.ttf"
 ```
 
 #### 2. Batch Processing
@@ -184,7 +191,8 @@ X-API-Key: your-api-key
         "/path/to/file2.png"
     ],
     "text": "Your Watermark Text",
-    "position": "top-left"
+    "position": "top-left",
+    "font_file": "/path/to/font.ttf"
 }
 ```
 
@@ -209,6 +217,22 @@ Verify that your API key is valid.
 GET /auth-check
 X-API-Key: your-api-key
 ```
+
+#### 6. Video Sample
+
+Retrieve a demo frame with a watermark.
+
+```http
+GET /video-sample
+```
+
+Example with cURL:
+
+```bash
+curl -o sample.jpg http://localhost:8000/video-sample
+```
+
+The server responds with a JPEG image illustrating the watermark.
 
 ### API Response Examples
 

@@ -227,16 +227,20 @@ X-API-Key: your-api-key  # or pass ?authkey=your-api-key
 Retrieve a demo frame with a watermark.
 
 ```http
-GET /video-sample
+POST /video-sample
 ```
 
 Example with cURL:
 
 ```bash
-curl -o sample.jpg http://localhost:8000/video-sample
+curl -o sample.jpg \
+  -F "file=@/path/to/video.mp4" \
+  -F "font_file=/path/to/font.ttf" \
+  http://localhost:8000/video-sample
 ```
 
-The server responds with a JPEG image illustrating the watermark.
+The server responds with a JPEG image illustrating the watermark. The
+`font_file` field is optional.
 
 ### API Response Examples
 

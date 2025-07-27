@@ -96,27 +96,17 @@ def get_video_duration(file_path: str) -> float:
     try:
         verify_ffmpeg()
         probe_cmd = [
-            "ffprobe",
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "default=noprint_wrappers=1:nokey=1",
-            file_path,
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'format=duration',
+            '-of', 'default=noprint_wrappers=1:nokey=1',
+            file_path
         ]
-        result = subprocess.run(
-            probe_cmd, capture_output=True, text=True, check=True
-        )
+        result = subprocess.run(probe_cmd, capture_output=True, text=True, check=True)
         return float(result.stdout.strip())
-    except subprocess.CalledProcessError as e:
-        raise WatermarkError(
-            f"Could not get duration for {file_path}: {e.stderr}"
-        ) from e
-    except ValueError as e:
-        raise WatermarkError(
-            f"Could not parse duration for {file_path}: {e}"
-        ) from e
+    except (subprocess.CalledProcessError, ValueError) as e:
+        raise WatermarkError(f"Could not get duration for {file_path}: {str(e)}")
+
 
 def apply_watermark(
     input_path: str,

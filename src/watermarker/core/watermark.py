@@ -90,6 +90,22 @@ def get_dimensions(file_path: str) -> Tuple[int, int]:
     except (subprocess.CalledProcessError, ValueError) as e:
         raise WatermarkError(f"Could not get dimensions for {file_path}: {str(e)}")
 
+def get_video_duration(file_path: str) -> float:
+    """Return the duration of a video file in seconds using ffprobe."""
+    try:
+        verify_ffmpeg()
+        probe_cmd = [
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'format=duration',
+            '-of', 'default=noprint_wrappers=1:nokey=1',
+            file_path
+        ]
+        result = subprocess.run(probe_cmd, capture_output=True, text=True, check=True)
+        return float(result.stdout.strip())
+    except (subprocess.CalledProcessError, ValueError) as e:
+        raise WatermarkError(f"Could not get duration for {file_path}: {str(e)}")
+
 def apply_watermark(
     input_path: str,
     watermark_text: str,

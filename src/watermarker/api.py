@@ -25,7 +25,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, APIKeyQuery
 from fastapi.responses import FileResponse
 
 from .core.watermark import (
@@ -72,17 +72,26 @@ if config["output_folder"]:
     )
 
 API_KEY = os.getenv("API_KEY")
-api_key_header = APIKeyHeader(name="X-API-Key")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+api_key_query = APIKeyQuery(name="authkey", auto_error=False)
 
 
-def get_api_key(api_key: str = Depends(api_key_header)) -> str:
+def get_api_key(
+    api_key_header_value: str | None = Depends(api_key_header),
+    api_key_query_value: str | None = Depends(api_key_query),
+) -> str:
     if not API_KEY:
         raise HTTPException(status_code=500, detail="API key not configured")
-    if api_key != API_KEY:
+
+    provided_key = api_key_header_value or api_key_query_value
+
+    if provided_key != API_KEY:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API Key",
         )
-    return api_key
+
+    return provided_key
 
 
 def save_upload_file(upload_file: UploadFile, destination: Path) -> str:

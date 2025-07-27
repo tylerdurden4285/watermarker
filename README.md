@@ -218,6 +218,22 @@ GET /auth-check
 X-API-Key: your-api-key
 ```
 
+#### 6. Video Sample
+
+Retrieve a demo frame with a watermark.
+
+```http
+GET /video-sample
+```
+
+Example with cURL:
+
+```bash
+curl -o sample.jpg http://localhost:8000/video-sample
+```
+
+The server responds with a JPEG image illustrating the watermark.
+
 ### API Response Examples
 
 **Successful Upload Response (202 Accepted):**

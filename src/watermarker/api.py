@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import shutil
+import subprocess
 import threading
 import time
 import uuid
@@ -25,8 +26,14 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import APIKeyHeader
+from fastapi.responses import FileResponse
 
-from .core.watermark import VALID_EXTENSIONS, apply_watermark, load_config
+from .core.watermark import (
+    VALID_EXTENSIONS,
+    apply_watermark,
+    get_video_duration,
+    load_config,
+)
 from .tasks.watermark import (
     TaskManager,
     TaskStatus,
@@ -192,6 +199,62 @@ async def watermark_batch(
         "status_url": f"/api/v1/tasks/{task.task_id}",
         "message": f"Processing {len(file_paths)} files in the background",
     }
+
+
+@app.post("/video-sample")
+async def video_sample(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    text: str = "WATERMARK",
+    position: str = "top-left",
+    api_key: str = Depends(get_api_key),
+):
+    """Return a watermarked frame from the midpoint of the uploaded video."""
+    valid_positions = [
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+        "center",
+    ]
+    if position not in valid_positions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid position. Must be one of: {', '.join(valid_positions)}",
+        )
+
+    upload_dir = Path(config["upload_folder"])
+    input_path = save_upload_file(file, upload_dir)
+
+    try:
+        duration = get_video_duration(input_path)
+        timestamp = duration / 2
+
+        frame_path = upload_dir / f"{uuid.uuid4()}.jpg"
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-ss",
+            str(timestamp),
+            "-i",
+            input_path,
+            "-frames:v",
+            "1",
+            "-q:v",
+            str(config["image_quality"]),
+            "-y",
+            str(frame_path),
+        ]
+        subprocess.run(ffmpeg_cmd, capture_output=True, text=True, check=True)
+
+        output_path = apply_watermark(
+            str(frame_path), text, position=position, config=config
+        )
+
+    finally:
+        background_tasks.add_task(os.remove, input_path)
+        background_tasks.add_task(os.remove, frame_path)
+
+    return FileResponse(output_path, media_type="image/jpeg")
 
 
 @app.get("/health")

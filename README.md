@@ -66,7 +66,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 
 ## ⚙️ Configuration
 
-Edit the `.env` file to customize the application:
+Edit the `.env` file to customize the application (see `.env.example` for all available variable names):
 
 ```ini
 # --- Watermark Settings ---
@@ -86,7 +86,30 @@ UPLOAD_FOLDER=./uploads        # Where to store uploaded files
 MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
 ```
 
-CLI arguments or API parameters will override these environment settings if provided.
+### API Parameters
+
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+|`authkey`|None|API key for authentication. Can be used instead of the `X-API-Key` header|
+|`text`|`"WATERMARK"`|Watermark text if not provided elsewhere|
+|`position`|`top-left`|Watermark placement (`top-left`, `top-right`, `bottom-left`, `bottom-right`, `center`)|
+|`font_file`|Value of `FONT_FILE`|Path to a custom font file|
+
+### CLI Flags
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+|`--output-dir PATH`|`OUTPUT_FOLDER`|Directory to save processed files|
+|`--quality N`|`IMAGE_QUALITY`/`VIDEO_QUALITY`|Image/video output quality (1-100)|
+|`--font-file FILE`|`FONT_FILE`|Font file to use for the watermark text|
+|`--top-left`/`--top-right`/`--bottom-left`/`--bottom-right`/`--center`|`top-left`|Select watermark position|
+
+### Priority
+
+1. CLI arguments override API parameters (when applicable).
+2. API parameters and CLI arguments override `.env` variables.
+3. `.env` variables override defaults hardcoded in `load_config()`.
+
 
 ## 💻 Command Line Usage
 
@@ -233,7 +256,7 @@ GET /video-sample
 Example with cURL:
 
 ```bash
-curl -o sample.jpg http://localhost:8000/video-sample
+curl -o sample.jpg "http://localhost:8000/video-sample?authkey=your-api-key&text=DEMO&position=bottom-right"
 ```
 
 The server responds with a JPEG image illustrating the watermark.

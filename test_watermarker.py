@@ -57,11 +57,26 @@ def run_cli() -> subprocess.CompletedProcess:
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         pytest.skip("ffmpeg/ffprobe not installed")
 
-    # Create test files if they don't exist
-    for filename in TEST_FILES:
+    # Create simple image files if they don't exist
+    colors = ["red", "blue"]
+    for filename, color in zip(TEST_FILES, colors):
         if not os.path.exists(filename):
-            with open(filename, "wb") as f:
-                f.write(b"Dummy image data")
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    f"color=c={color}:s=64x64",
+                    "-frames:v",
+                    "1",
+                    filename,
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
 
     # Test basic watermarking
     cmd = [
@@ -104,10 +119,24 @@ def test_upload_file(api_key: str) -> None:
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         pytest.skip("ffmpeg/ffprobe not installed")
 
-    # Create a test file
+    # Create a small JPEG test file
     test_file = "test_upload.jpg"
-    with open(test_file, "wb") as f:
-        f.write(b"Dummy image data")
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=green:s=64x64",
+            "-frames:v",
+            "1",
+            test_file,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
     try:
         with open(test_file, "rb") as f:
@@ -133,6 +162,51 @@ def test_upload_file(api_key: str) -> None:
         raise
     finally:
         # Clean up test file
+        if os.path.exists(test_file):
+            os.remove(test_file)
+
+
+def test_upload_file_query_param(api_key: str) -> None:
+    """Test upload using the authkey query parameter."""
+
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("ffmpeg/ffprobe not installed")
+
+    test_file = "test_upload_qp.jpg"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=yellow:s=64x64",
+            "-frames:v",
+            "1",
+            test_file,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    try:
+        with open(test_file, "rb") as f:
+            files = {"file": (test_file, f, "image/jpeg")}
+            data = {"text": "API_TEST", "position": "center"}
+
+            response = requests.post(
+                f"{API_URL}/api/v1/watermark/upload?authkey={api_key}",
+                files=files,
+                data=data,
+            )
+            response.raise_for_status()
+            assert response.status_code == 202
+            task_id = response.json().get("task_id")
+            assert task_id is not None
+            assert wait_for_task_completion(task_id, api_key)
+            return
+    finally:
         if os.path.exists(test_file):
             os.remove(test_file)
 

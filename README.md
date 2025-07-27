@@ -150,6 +150,9 @@ With the above settings the API will be available at `http://localhost:9000`.
 
 ### API Endpoints
 
+Authentication is required for most endpoints. Send your key in the
+`X-API-Key` header or as the `authkey` query parameter.
+
 #### 1. Upload and Watermark
 
 Upload a file and apply a watermark in one request.
@@ -168,13 +171,14 @@ font_file: /path/to/font.ttf  # Optional
 Example with cURL:
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/watermark/upload" \
-  -H "X-API-Key: your-api-key" \
+curl -X POST "http://localhost:8000/api/v1/watermark/upload?authkey=your-api-key" \
   -F "file=@/path/to/your/image.jpg" \
   -F "text=SAMPLE_WATERMARK" \
   -F "position=center" \
   -F "font_file=/path/to/font.ttf"
 ```
+You can also send `X-API-Key: your-api-key` as a header instead of using
+`authkey` in the URL.
 
 #### 2. Batch Processing
 
@@ -183,7 +187,7 @@ Process multiple files by their paths.
 ```http
 POST /api/v1/watermark/batch
 Content-Type: application/json
-X-API-Key: your-api-key
+X-API-Key: your-api-key  # or append ?authkey=your-api-key
 
 {
     "file_paths": [
@@ -200,7 +204,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /api/v1/tasks/{task_id}
-X-API-Key: your-api-key
+X-API-Key: your-api-key  # or use ?authkey=your-api-key
 ```
 
 #### 4. Health Check
@@ -215,7 +219,7 @@ Verify that your API key is valid.
 
 ```http
 GET /auth-check
-X-API-Key: your-api-key
+X-API-Key: your-api-key  # or pass ?authkey=your-api-key
 ```
 
 #### 6. Video Sample

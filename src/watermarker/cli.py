@@ -74,6 +74,12 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
         metavar="[1-100]",
         help="Quality setting for output",
     )
+    parser.add_argument(
+        "--font-file",
+        dest="font_file",
+        type=str,
+        help="Path to TTF font file to use for watermark text",
+    )
 
     return parser.parse_args(argv)
 
@@ -90,6 +96,14 @@ def cli_main(argv: List[str]) -> int:
     if args.quality:
         config["image_quality"] = args.quality
         config["video_quality"] = args.quality
+    if getattr(args, "font_file", None):
+        if os.path.isfile(args.font_file):
+            config["font_file"] = args.font_file
+        else:
+            print(
+                f"Font file {args.font_file} not found, using default {config['font_file']}",
+                file=sys.stderr,
+            )
 
     result = process_files(args.files, args.text, position=args.position, config=config)
 

@@ -116,6 +116,7 @@ async def upload_and_watermark(
     file: UploadFile = File(...),
     text: str = "WATERMARK",
     position: str = "top-left",
+    font_file: str | None = None,
     api_key: str = Depends(get_api_key),
 ):
     valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
@@ -128,6 +129,13 @@ async def upload_and_watermark(
     upload_dir = Path(config["upload_folder"])
     input_path = save_upload_file(file, upload_dir)
 
+    cfg = config.copy()
+    if font_file:
+        if os.path.isfile(font_file):
+            cfg["font_file"] = font_file
+        else:
+            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
+
     task = TaskManager.create_task()
     background_tasks.add_task(
         process_watermark_task,
@@ -135,7 +143,7 @@ async def upload_and_watermark(
         input_path=input_path,
         watermark_text=text,
         position=position,
-        config=config,
+        config=cfg,
     )
 
     return {
@@ -151,6 +159,7 @@ async def watermark_batch(
     file_paths: List[str],
     text: str,
     position: str = "top-left",
+    font_file: str | None = None,
     api_key: str = Depends(get_api_key),
 ):
     valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
@@ -160,6 +169,13 @@ async def watermark_batch(
             detail=f"Invalid position. Must be one of: {', '.join(valid_positions)}",
         )
 
+    cfg = config.copy()
+    if font_file:
+        if os.path.isfile(font_file):
+            cfg["font_file"] = font_file
+        else:
+            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
+
     task = TaskManager.create_task()
     background_tasks.add_task(
         process_batch_task,
@@ -167,7 +183,7 @@ async def watermark_batch(
         file_paths=file_paths,
         watermark_text=text,
         position=position,
-        config=config,
+        config=cfg,
     )
 
     return {

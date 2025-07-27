@@ -216,6 +216,7 @@ async def video_sample(
     file: UploadFile = File(...),
     text: str = "WATERMARK",
     position: str = "top-left",
+    font_file: str | None = None,
     api_key: str = Depends(get_api_key),
 ):
     """Return a watermarked frame from the midpoint of the uploaded video."""
@@ -234,6 +235,13 @@ async def video_sample(
 
     upload_dir = Path(config["upload_folder"])
     input_path = save_upload_file(file, upload_dir)
+
+    cfg = config.copy()
+    if font_file:
+        if os.path.isfile(font_file):
+            cfg["font_file"] = font_file
+        else:
+            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
 
     try:
         duration = get_video_duration(input_path)
@@ -256,7 +264,7 @@ async def video_sample(
         subprocess.run(ffmpeg_cmd, capture_output=True, text=True, check=True)
 
         output_path = apply_watermark(
-            str(frame_path), text, position=position, config=config
+            str(frame_path), text, position=position, config=cfg
         )
 
     finally:

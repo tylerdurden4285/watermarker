@@ -238,10 +238,12 @@ def test_video_sample(api_key: str) -> None:
         with open(sample_video, "rb") as f:
             files = {"file": (sample_video, f, "video/mp4")}
             headers = {"X-API-Key": api_key}
+            data = {"font_file": "Nakana.otf"}
 
             response = requests.post(
                 f"{API_URL}/video-sample",
                 files=files,
+                data=data,
                 headers=headers,
             )
         response.raise_for_status()

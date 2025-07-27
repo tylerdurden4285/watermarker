@@ -137,6 +137,48 @@ def test_upload_file(api_key: str) -> None:
             os.remove(test_file)
 
 
+def test_video_sample(api_key: str) -> None:
+    """Upload a video to /video-sample and ensure JPEG bytes are returned."""
+
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("ffmpeg/ffprobe not installed")
+
+    sample_video = "sample.mp4"
+    # Create a small 1 second dummy video using ffmpeg
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc=duration=1:size=128x128:rate=1",
+            sample_video,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    try:
+        with open(sample_video, "rb") as f:
+            files = {"file": (sample_video, f, "video/mp4")}
+            headers = {"X-API-Key": api_key}
+
+            response = requests.post(
+                f"{API_URL}/video-sample",
+                files=files,
+                headers=headers,
+            )
+        response.raise_for_status()
+        assert response.status_code == 200
+        assert response.headers.get("content-type") == "image/jpeg"
+        assert response.content.startswith(b"\xff\xd8")
+    finally:
+        if os.path.exists(sample_video):
+            os.remove(sample_video)
+
+
 def check_task_status(task_id: str, api_key: str) -> str:
     """Return the status of a background task."""
     print(f"\nChecking task status for {task_id}...")

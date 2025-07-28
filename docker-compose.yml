@@ -8,5 +8,9 @@ services:
       - .env
     user: "${USER_ID:-0}:${GROUP_ID:-0}"
     volumes:
-      - ./output:/app/output
-      - ./uploads:/app/uploads
+      - watermarker_output:/app/output
+      - watermarker_uploads:/app/uploads
+
+volumes:
+  watermarker_output:
+  watermarker_uploads:

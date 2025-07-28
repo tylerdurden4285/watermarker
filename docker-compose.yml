@@ -6,6 +6,7 @@ services:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
     env_file:
       - .env
+    user: "${USER_ID:-0}:${GROUP_ID:-0}"
     volumes:
       - ./output:/app/output
       - ./uploads:/app/uploads

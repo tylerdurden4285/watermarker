@@ -7,10 +7,3 @@ services:
     env_file:
       - .env
     user: "${USER_ID:-0}:${GROUP_ID:-0}"
-    volumes:
-      - watermarker_output:/app/output
-      - watermarker_uploads:/app/uploads
-
-volumes:
-  watermarker_output:
-  watermarker_uploads:

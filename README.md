@@ -177,6 +177,13 @@ API_PORT=9000
 HOST=0.0.0.0
 ```
 
+If you want output files owned by a specific user, define `USER_ID` and `GROUP_ID` in your `.env` file. Compose will pass these IDs to the container:
+
+```ini
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+```
+
 With the above settings the API will be available at `http://localhost:9000`.
 
 ### API Endpoints

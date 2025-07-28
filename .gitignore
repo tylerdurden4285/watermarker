@@ -106,3 +106,4 @@ src/watermarker/testing/*
 output/
 testing/
 tests/
+fonts/*

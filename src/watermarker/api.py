@@ -9,6 +9,8 @@ import subprocess
 import threading
 import time
 import uuid
+import asyncio
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -263,8 +265,16 @@ async def video_sample(
         ]
         subprocess.run(ffmpeg_cmd, capture_output=True, text=True, check=True)
 
-        output_path = apply_watermark(
-            str(frame_path), text, position=position, config=cfg
+        loop = asyncio.get_running_loop()
+        output_path = await loop.run_in_executor(
+            None,
+            partial(
+                apply_watermark,
+                str(frame_path),
+                text,
+                position=position,
+                config=cfg,
+            ),
         )
 
     finally:

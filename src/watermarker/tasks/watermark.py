@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from functools import partial
 import logging
 import uuid
 from datetime import datetime, timedelta
@@ -47,7 +48,7 @@ class Task(BaseModel):
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
 
-            "result": self.result,
+            "result": self.result or {},
 
             "error": self.error,
             "retry_count": self.retry_count,
@@ -107,7 +108,17 @@ async def process_watermark_task(
 
     try:
         TaskManager.update_task_status(task_id, TaskStatus.PROCESSING)
-        output_path = apply_watermark(input_path, watermark_text, position=position, config=config)
+        loop = asyncio.get_running_loop()
+        output_path = await loop.run_in_executor(
+            None,
+            partial(
+                apply_watermark,
+                input_path,
+                watermark_text,
+                position=position,
+                config=config,
+            ),
+        )
         TaskManager.update_task_status(
             task_id, TaskStatus.COMPLETED, result={"output_path": output_path}
 
@@ -152,9 +163,19 @@ async def process_batch_task(
 
         processed: List[tuple[str, str]] = []
         skipped: List[tuple[str, str]] = []
+        loop = asyncio.get_running_loop()
         for idx, file_path in enumerate(file_paths, 1):
             try:
-                output = apply_watermark(file_path, watermark_text, position=position, config=config)
+                output = await loop.run_in_executor(
+                    None,
+                    partial(
+                        apply_watermark,
+                        file_path,
+                        watermark_text,
+                        position=position,
+                        config=config,
+                    ),
+                )
                 processed.append((file_path, output))
             except Exception as exc:
                 logger.error("Error processing %s: %s", file_path, exc)

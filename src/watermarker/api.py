@@ -35,6 +35,7 @@ from .core.watermark import (
     apply_watermark,
     get_video_duration,
     load_config,
+    ensure_directory,
 )
 from .tasks.watermark import (
     TaskManager,
@@ -49,7 +50,7 @@ logger = logging.getLogger(__name__)
 load_dotenv(find_dotenv())
 
 config = load_config()
-os.makedirs(config["upload_folder"], exist_ok=True)
+ensure_directory(config["upload_folder"])
 
 app = FastAPI(
     title="Watermarker API",

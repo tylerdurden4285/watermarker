@@ -282,7 +282,8 @@ The server responds with a JPEG image illustrating the watermark. The
 ```
 
 **Task Status Response:**
-The `result` object includes a `progress` field showing completion percentage.
+The `result` object includes a `progress` field showing completion percentage for
+both single-file and batch tasks.
 ```json
 {
     "task_id": "550e8400-e29b-41d4-a716-446655440000",

@@ -113,6 +113,11 @@ async def process_watermark_task(
     position: str,
     config: Dict[str, Any],
     retry_count: int = 0,
+    font_size: int | None = None,
+    padding: int | None = None,
+    font_color: str | None = None,
+    border_color: str | None = None,
+    border_thickness: int | None = None,
 ) -> None:
     task = TaskManager.get_task(task_id)
     if not task:
@@ -133,6 +138,11 @@ async def process_watermark_task(
                 watermark_text,
                 position=position,
                 config=config,
+                font_size=font_size,
+                padding=padding,
+                font_color=font_color,
+                border_color=border_color,
+                border_thickness=border_thickness,
             ),
         )
         TaskManager.update_task_status(
@@ -157,7 +167,17 @@ async def process_watermark_task(
             )
             await asyncio.sleep(delay)
             await process_watermark_task(
-                task_id, input_path, watermark_text, position, config, retry_count + 1
+                task_id,
+                input_path,
+                watermark_text,
+                position,
+                config,
+                retry_count + 1,
+                font_size=font_size,
+                padding=padding,
+                font_color=font_color,
+                border_color=border_color,
+                border_thickness=border_thickness,
             )
         else:
             TaskManager.update_task_status(
@@ -175,6 +195,11 @@ async def process_batch_task(
     watermark_text: str,
     position: str,
     config: Dict[str, Any],
+    font_size: int | None = None,
+    padding: int | None = None,
+    font_color: str | None = None,
+    border_color: str | None = None,
+    border_thickness: int | None = None,
 ) -> None:
     task = TaskManager.get_task(task_id)
     if not task:
@@ -200,6 +225,11 @@ async def process_batch_task(
                         watermark_text,
                         position=position,
                         config=config,
+                        font_size=font_size,
+                        padding=padding,
+                        font_color=font_color,
+                        border_color=border_color,
+                        border_thickness=border_thickness,
                     ),
                 )
                 processed.append((file_path, output))

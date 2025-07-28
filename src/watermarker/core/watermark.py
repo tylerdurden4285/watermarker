@@ -113,6 +113,11 @@ def apply_watermark(
     watermark_text: str,
     output_path: Optional[str] = None,
     position: str = 'top-left',
+    font_size: Optional[int] = None,
+    padding: Optional[int] = None,
+    font_color: Optional[str] = None,
+    border_color: Optional[str] = None,
+    border_thickness: Optional[int] = None,
     config: Optional[Dict] = None
 ) -> str:
     """
@@ -122,8 +127,14 @@ def apply_watermark(
         input_path: Path to the input file
         watermark_text: Text to use as watermark
         output_path: Optional output path (default: add _watermarked_timestamp to input filename)
-        position: Position of the watermark ('top-left', 'top-right', 'bottom-left', 'bottom-right', 'center')
-        config: Optional configuration dictionary (will load from env if not provided)
+        output_path: Optional path for the output file
+        position: Position of the watermark
+        font_size: Optional font size to override config
+        padding: Optional padding to override config
+        font_color: Optional font color (hex) to override config
+        border_color: Optional border color (hex) to override config
+        border_thickness: Optional border thickness to override config
+        config: Optional configuration dictionary
         
     Returns:
         Path to the watermarked file
@@ -131,22 +142,31 @@ def apply_watermark(
     try:
         verify_ffmpeg()
         # Load config if not provided
-        if config is None:
-            config = load_config()
+        cfg = config or load_config()
+
+        # Override config with any provided parameters
+        if padding is not None:
+            cfg['padding'] = padding
+        if font_color is not None:
+            cfg['font_color'] = font_color
+        if border_color is not None:
+            cfg['border_color'] = border_color
+        if border_thickness is not None:
+            cfg['border_thickness'] = border_thickness
         
         # Set default output path if not provided
         if output_path is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             input_path_obj = Path(input_path)
-            timestamp = datetime.now().strftime("%d-%m-%H-%M-%S")
             output_filename = f"{input_path_obj.stem}{SUFFIX}_{timestamp}{input_path_obj.suffix}"
-            output_path = str(Path(config['output_folder'] or input_path_obj.parent) / output_filename)
+            output_path = str(Path(cfg['output_folder'] or input_path_obj.parent) / output_filename)
         
         # Ensure output directory exists
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
         
         # Escape text and font path for ffmpeg
         escaped_text = escape_ffmpeg_text(watermark_text)
-        escaped_font_path = config['font_file'].replace('\\', '/')
+        escaped_font_path = cfg['font_file'].replace('\\', '/')
         
         # Get dimensions for positioning
         try:
@@ -155,22 +175,28 @@ def apply_watermark(
             # If we can't get dimensions, use a default position
             width, height = 1920, 1080
         
+        # Scale font size, padding, and border thickness based on video height for consistency.
+        scale_factor = height / 1080.0
+        scaled_font_size = font_size if font_size is not None else int(cfg['font_size'] * scale_factor)
+        scaled_padding = int(cfg['padding'] * scale_factor)
+        scaled_border_thickness = int(cfg['border_thickness'] * scale_factor)
+
         # Calculate position
         if position == 'top-right':
-            x = f"w-text_w-{config['padding']}"
-            y = config['padding']
+            x = f"w-text_w-{scaled_padding}"
+            y = str(scaled_padding)
         elif position == 'bottom-left':
-            x = config['padding']
-            y = f"h-text_h-{config['padding']}"
+            x = str(scaled_padding)
+            y = f"h-text_h-{scaled_padding}"
         elif position == 'bottom-right':
-            x = f"w-text_w-{config['padding']}"
-            y = f"h-text_h-{config['padding']}"
+            x = f"w-text_w-{scaled_padding}"
+            y = f"h-text_h-{scaled_padding}"
         elif position == 'center':
             x = "(w-text_w)/2"
             y = "(h-text_h)/2"
         else:  # top-left (default)
-            x = config['padding']
-            y = config['padding']
+            x = str(scaled_padding)
+            y = str(scaled_padding)
         
         # Build ffmpeg command
         ffmpeg_cmd = [
@@ -181,9 +207,9 @@ def apply_watermark(
                 f"fontfile='{escaped_font_path}':"
                 f"text='{escaped_text}':"
                 f"x={x}:y={y}:"
-                f"fontsize={config['font_size']}:"
-                f"fontcolor=0x{config['font_color']}:"
-                f"borderw={config['border_thickness']}:bordercolor=0x{config['border_color']}:"
+                f"fontsize={scaled_font_size}:"
+                f"fontcolor=0x{cfg['font_color']}:"
+                f"borderw={scaled_border_thickness}:bordercolor=0x{cfg['border_color']}:"
                 f"shadowcolor=0x808080:shadowx=3:shadowy=3"
             ),
         ]
@@ -191,9 +217,9 @@ def apply_watermark(
         # Add quality settings
         is_image = str(input_path).lower().endswith(IMAGE_EXTENSIONS)
         if is_image:
-            ffmpeg_cmd.extend(['-q:v', str(config['image_quality'])])
+            ffmpeg_cmd.extend(['-q:v', str(cfg['image_quality'])])
         else:
-            ffmpeg_cmd.extend(['-crf', str(config['video_quality']), '-c:a', 'copy'])
+            ffmpeg_cmd.extend(['-crf', str(cfg['video_quality']), '-c:a', 'copy'])
         
         # Add output path
         ffmpeg_cmd.extend(['-y', output_path])

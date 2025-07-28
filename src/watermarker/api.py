@@ -135,6 +135,11 @@ async def upload_and_watermark(
     text: str = "WATERMARK",
     position: str = "top-left",
     font_file: str | None = None,
+    font_size: int | None = None,
+    padding: int | None = None,
+    font_color: str | None = None,
+    border_color: str | None = None,
+    border_thickness: int | None = None,
     api_key: str = Depends(get_api_key),
 ):
     valid_positions = ["top-left", "top-right", "bottom-left", "bottom-right", "center"]
@@ -164,6 +169,11 @@ async def upload_and_watermark(
         watermark_text=text,
         position=position,
         config=cfg,
+        font_size=font_size,
+        padding=padding,
+        font_color=font_color,
+        border_color=border_color,
+        border_thickness=border_thickness,
     )
 
     return {
@@ -223,6 +233,11 @@ async def video_sample(
     text: str = "WATERMARK",
     position: str = "top-left",
     font_file: str | None = None,
+    font_size: int | None = None,
+    padding: int | None = None,
+    font_color: str | None = None,
+    border_color: str | None = None,
+    border_thickness: int | None = None,
     api_key: str = Depends(get_api_key),
 ):
     """Return a watermarked frame from the midpoint of the uploaded video."""
@@ -297,6 +312,11 @@ async def video_sample(
                 text,
                 position=position,
                 config=cfg,
+                font_size=font_size,
+                padding=padding,
+                font_color=font_color,
+                border_color=border_color,
+                border_thickness=border_thickness,
             ),
         )
 

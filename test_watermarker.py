@@ -211,6 +211,61 @@ def test_upload_file_query_param(api_key: str) -> None:
             os.remove(test_file)
 
 
+def test_upload_with_extra_args(api_key: str) -> None:
+    """Ensure optional parameters are accepted for watermarking."""
+
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.skip("ffmpeg/ffprobe not installed")
+
+    test_file = "test_extra.jpg"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=purple:s=64x64",
+            "-frames:v",
+            "1",
+            test_file,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    try:
+        with open(test_file, "rb") as f:
+            files = {"file": (test_file, f, "image/jpeg")}
+            data = {
+                "text": "EXTRA",
+                "position": "center",
+                "font_size": 20,
+                "padding": 5,
+                "font_color": "FF0000",
+                "border_color": "00FF00",
+                "border_thickness": 3,
+            }
+            headers = {"X-API-Key": api_key}
+
+            response = requests.post(
+                f"{API_URL}/api/v1/watermark/upload",
+                files=files,
+                data=data,
+                headers=headers,
+            )
+            response.raise_for_status()
+            assert response.status_code == 202
+            task_id = response.json().get("task_id")
+            assert task_id is not None
+            assert wait_for_task_completion(task_id, api_key)
+            return
+    finally:
+        if os.path.exists(test_file):
+            os.remove(test_file)
+
+
 def test_video_sample(api_key: str) -> None:
     """Upload a video to /video-sample and ensure JPEG bytes are returned."""
 

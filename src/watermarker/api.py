@@ -152,7 +152,9 @@ async def upload_and_watermark(
         if os.path.isfile(font_file):
             cfg["font_file"] = font_file
         else:
-            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
+            logger.warning(
+                "Font file %s not found, using default %s", font_file, cfg["font_file"]
+            )
 
     task = TaskManager.create_task()
     background_tasks.add_task(
@@ -192,7 +194,9 @@ async def watermark_batch(
         if os.path.isfile(font_file):
             cfg["font_file"] = font_file
         else:
-            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
+            logger.warning(
+                "Font file %s not found, using default %s", font_file, cfg["font_file"]
+            )
 
     task = TaskManager.create_task()
     background_tasks.add_task(
@@ -243,7 +247,9 @@ async def video_sample(
         if os.path.isfile(font_file):
             cfg["font_file"] = font_file
         else:
-            logger.warning("Font file %s not found, using default %s", font_file, cfg["font_file"])
+            logger.warning(
+                "Font file %s not found, using default %s", font_file, cfg["font_file"]
+            )
 
     try:
         duration = get_video_duration(input_path)
@@ -263,7 +269,24 @@ async def video_sample(
             "-y",
             str(frame_path),
         ]
-        subprocess.run(ffmpeg_cmd, capture_output=True, text=True, check=True)
+        try:
+            subprocess.run(ffmpeg_cmd, capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError as exc:
+            logger.warning(
+                "Frame grab failed at %s: %s; using first frame", timestamp, exc
+            )
+            fallback_cmd = [
+                "ffmpeg",
+                "-i",
+                input_path,
+                "-frames:v",
+                "1",
+                "-q:v",
+                str(config["image_quality"]),
+                "-y",
+                str(frame_path),
+            ]
+            subprocess.run(fallback_cmd, capture_output=True, text=True, check=True)
 
         loop = asyncio.get_running_loop()
         output_path = await loop.run_in_executor(
@@ -320,6 +343,12 @@ def run_server() -> None:
     print(f"Output folder: {os.path.abspath(config['output_folder'])}")
     print("\nUse Ctrl+C to stop\n")
 
+    reload_flag = os.getenv("RELOAD", "false").lower() in {"1", "true", "yes"}
+
     uvicorn.run(
-        "watermarker.api:app", host=host, port=port, reload=True, log_level="info"
+        "watermarker.api:app",
+        host=host,
+        port=port,
+        reload=reload_flag,
+        log_level="info",
     )

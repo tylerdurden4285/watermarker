@@ -119,7 +119,11 @@ async def process_watermark_task(
         return
 
     try:
-        TaskManager.update_task_status(task_id, TaskStatus.PROCESSING)
+        TaskManager.update_task_status(
+            task_id,
+            TaskStatus.PROCESSING,
+            result={"progress": 0},
+        )
         loop = asyncio.get_running_loop()
         output_path = await loop.run_in_executor(
             None,
@@ -132,7 +136,9 @@ async def process_watermark_task(
             ),
         )
         TaskManager.update_task_status(
-            task_id, TaskStatus.COMPLETED, result={"output_path": output_path}
+            task_id,
+            TaskStatus.COMPLETED,
+            result={"output_path": output_path, "progress": 100},
 
         )
         logger.info("Task %s completed successfully", task_id)
@@ -143,7 +149,11 @@ async def process_watermark_task(
             delay = task.retry_delay * (2 ** retry_count)
             logger.info("Retrying task %s in %s seconds", task_id, delay)
             TaskManager.update_task_status(
-                task_id, TaskStatus.RETRYING, error=err, retry_count=retry_count + 1
+                task_id,
+                TaskStatus.RETRYING,
+                error=err,
+                retry_count=retry_count + 1,
+                result={"progress": 0},
             )
             await asyncio.sleep(delay)
             await process_watermark_task(
@@ -151,7 +161,11 @@ async def process_watermark_task(
             )
         else:
             TaskManager.update_task_status(
-                task_id, TaskStatus.FAILED, error=err, retry_count=retry_count
+                task_id,
+                TaskStatus.FAILED,
+                error=err,
+                retry_count=retry_count,
+                result={"progress": 0},
             )
 
 

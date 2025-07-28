@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from ..core.watermark import apply_watermark
+from ..hooks import trigger_hook
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,7 @@ class TaskManager:
         if not task:
             return None
 
+        previous_status = task.status
         task.status = status
         if status == TaskStatus.PROCESSING and not task.started_at:
             task.started_at = datetime.utcnow()
@@ -83,6 +85,16 @@ class TaskManager:
         for key, value in kwargs.items():
             if hasattr(task, key):
                 setattr(task, key, value)
+
+        updated_task = task.to_dict()
+
+        if status == TaskStatus.PROCESSING and previous_status != TaskStatus.PROCESSING:
+            trigger_hook("start", updated_task)
+        elif status == TaskStatus.COMPLETED:
+            trigger_hook("complete", updated_task)
+        elif status == TaskStatus.FAILED:
+            trigger_hook("error", updated_task)
+
         return task
 
     @staticmethod

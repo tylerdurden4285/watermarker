@@ -14,6 +14,7 @@ A powerful tool for adding text watermarks to images and videos, available as bo
 - **Retry Mechanism**: Automatic retries for failed operations
 - **Format Support**: Works with common image and video formats
 - **Secure**: API key authentication for web service
+- **Event Hooks**: Optional webhooks or commands on task start, error, and completion
 
 ## 🚀 Quick Start
 
@@ -84,7 +85,14 @@ HOST=0.0.0.0                   # Bind address for the server
 API_KEY=your-secure-api-key    # Change this to a secure key
 UPLOAD_FOLDER=./uploads        # Where to store uploaded files
 MAX_UPLOAD_SIZE_MB=1024        # Max file size in MB (1GB)
+# Optional task hooks (URL or command)
+START_HOOK=
+ERROR_HOOK=
+COMPLETE_HOOK=
 ```
+
+Set any of these hook variables to either a webhook URL or a command path. The
+task data is sent as JSON to the URL or as a JSON argument to the command.
 
 ### API Parameters
 
